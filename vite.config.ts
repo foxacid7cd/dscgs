@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import UnoCSS from "@unocss/svelte-scoped/vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import monkey from "vite-plugin-monkey";
 import { name, version, author } from "./package.json";
@@ -6,6 +7,7 @@ import { name, version, author } from "./package.json";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    UnoCSS({}),
     svelte(),
     monkey({
       entry: "src/main.ts",
