@@ -16,9 +16,7 @@ export default defineConfig({
         version,
         author: author.name,
         match: ["https://www.discogs.com/*"],
-      },
-      server: {
-        open: false,
+        grant: ["GM.xmlHttpRequest"],
       },
     }),
   ],
@@ -30,5 +28,6 @@ export default defineConfig({
     hmr: {
       port: 5174,
     },
+    cors: true,
   },
 });
