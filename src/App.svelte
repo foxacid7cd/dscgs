@@ -1,25 +1,88 @@
 <script lang="ts">
-  import Counter from "./lib/Counter.svelte";
+  import {
+    fetchDiscogsMaster,
+    type DiscogsTrack,
+    fetchDiscogsRelease,
+  } from "./lib/discogs";
+  import { getPageInfo } from "./lib/page";
+  import { fade } from "svelte/transition";
+
+  const pageInfo = getPageInfo();
+
+  async function fetchTracklist(params: {
+    type: "master" | "release";
+    id: string;
+  }): Promise<DiscogsTrack[]> {
+    switch (params.type) {
+      case "master":
+        const master = await fetchDiscogsMaster(params.id);
+        return master.tracklist;
+      case "release":
+        const release = await fetchDiscogsRelease(params.id);
+        return release.tracklist;
+    }
+  }
+
+  type TracklistContent = {
+    tracklist: Promise<DiscogsTrack[]>;
+  };
+  type Content = TracklistContent | null;
+  function makeContent(): Content {
+    switch (pageInfo.type) {
+      case "master":
+        return {
+          tracklist: fetchTracklist({ type: "master", id: pageInfo.id }),
+        };
+      case "release":
+        return {
+          tracklist: fetchTracklist({ type: "release", id: pageInfo.id }),
+        };
+      case "other":
+        return null;
+    }
+  }
+  const content = makeContent();
+
+  function onTrackClick(track: DiscogsTrack) {
+    window.open(`https://music.youtube.com/search?q=${track.title}`);
+  }
 </script>
 
-<main>
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a
-      href="https://github.com/sveltejs/kit#readme"
-      target="_blank"
-      rel="noreferrer">SvelteKit</a
-    >, the official Svelte123 app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">Click on the Vite and Svelte logos to learn more</p>
-</main>
+{#if content}
+  {#await content.tracklist then tracklist}
+    <div class="container">
+      <div class="tracklist" transition:fade={{ duration: 300 }}>
+        {#each tracklist as track}
+          <button class="track" on:click={() => onTrackClick(track)}>
+            <span>{track.title}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+  {:catch error}
+    <div class="container">
+      <p>{error}</p>
+    </div>
+  {/await}
+{/if}
 
 <style>
-  .read-the-docs {
-    color: #888;
+  .container {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    border-radius: 4px;
+  }
+
+  .tracklist {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .track {
+    padding: 8px;
+    text-align: left;
   }
 </style>
