@@ -1,53 +1,7 @@
 import "./app.css";
-import gmFetch from "@sec-ant/gm-fetch";
-import { DiscogsRelease } from "./lib/models";
+import { fetchDiscogsMaster, fetchDiscogsRelease } from "./lib/discogs";
+import { getPageInfo } from "./lib/page";
 
-type MasterPageInfo = {
-  type: "master";
-  id: string;
-};
-type ReleasePageInfo = {
-  type: "release";
-  id: string;
-};
-type OtherPageInfo = {
-  type: "other";
-};
-type PageInfo = MasterPageInfo | ReleasePageInfo | OtherPageInfo;
-function getPageInfo(): PageInfo {
-  const url = new URL(document.URL);
-  const match = /\/(?<type>.+)\/(?<id>[0-9]+)-.+/.exec(url.pathname);
-  if (!match || !match.groups) {
-    return { type: "other" };
-  }
-  switch (match.groups.type) {
-    case "master":
-      return {
-        type: "master",
-        id: match.groups.id,
-      };
-    case "release":
-      return {
-        type: "release",
-        id: match.groups.id,
-      };
-    default:
-      return { type: "other" };
-  }
-}
-
-// function getArtistName(): string | undefined {
-//   const header: HTMLElement | null = document.querySelector("h1");
-//   if (!header) {
-//     return;
-//   }
-//   const match = /(?<name>.+)\ –\ (.+)$/.exec(header.innerText);
-//   if (!match || !match.groups) {
-//     return;
-//   }
-//   return match.groups.name;
-// }
-//
 // const app = new App({
 //   target: (() => {
 //     const app = document.createElement("div");
@@ -59,22 +13,16 @@ function getPageInfo(): PageInfo {
 const pageInfo = getPageInfo();
 switch (pageInfo.type) {
   case "master":
-    console.log(`master: ${pageInfo.id}`);
+    try {
+      const master = await fetchDiscogsMaster(pageInfo.id);
+      console.log(master);
+    } catch (error) {
+      console.error(error);
+    }
     break;
   case "release":
     try {
-      const response = await gmFetch(
-        `https://api.discogs.com/releases/${pageInfo.id}`,
-        {
-          method: "get",
-          headers: {
-            "User-Agent": "dscgs/0.0.1",
-          },
-        },
-      );
-      const json = await response.json();
-      console.log(json);
-      const release = DiscogsRelease.parse(json);
+      const release = await fetchDiscogsRelease(pageInfo.id);
       console.log(release);
     } catch (error) {
       console.error(error);
