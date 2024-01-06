@@ -1,4 +1,6 @@
 import "./app.css";
+import gmFetch from "@sec-ant/gm-fetch";
+import { DiscogsRelease } from "./lib/models";
 
 type MasterPageInfo = {
   type: "master";
@@ -60,7 +62,23 @@ switch (pageInfo.type) {
     console.log(`master: ${pageInfo.id}`);
     break;
   case "release":
-    console.log(`release: ${pageInfo.id}`);
+    try {
+      const response = await gmFetch(
+        `https://api.discogs.com/releases/${pageInfo.id}`,
+        {
+          method: "get",
+          headers: {
+            "User-Agent": "dscgs/0.0.1",
+          },
+        },
+      );
+      const json = await response.json();
+      console.log(json);
+      const release = DiscogsRelease.parse(json);
+      console.log(release);
+    } catch (error) {
+      console.error(error);
+    }
     break;
   case "other":
     console.log(`other ${document.URL}`);

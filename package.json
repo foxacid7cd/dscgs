@@ -13,6 +13,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
+    "@sec-ant/gm-fetch": "^1.2.0",
     "@sveltejs/vite-plugin-svelte": "^2.4.3",
     "@tsconfig/svelte": "^5.0.0",
     "@unocss/svelte-scoped": "^0.58.2",
@@ -23,6 +24,7 @@
     "typescript": "^5.1.6",
     "unocss": "^0.58.2",
     "vite": "^4.4.8",
-    "vite-plugin-monkey": "^3.4.0"
+    "vite-plugin-monkey": "^3.4.0",
+    "zod": "^3.22.4"
   }
 }
