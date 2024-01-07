@@ -175,7 +175,7 @@
     border: none;
     font-family: inherit;
     cursor: pointer;
-    background-color: #eaeaea;
+    background-color: #f0f0f0;
     color: #000;
     border-radius: 4px;
     border: 1px solid #000;
