@@ -13,33 +13,48 @@
     platforms,
     allArtistsSetting,
   } from "./lib/settings";
+  import { onMount } from "svelte";
 
   const pageInfo = getPageInfo();
 
   type TracklistContent = {
+    type: "tracklist";
     artists: DiscogsArtist[];
     tracklist: DiscogsTrack[];
   };
-  type Content = TracklistContent | null;
-  async function makeContent(): Promise<Content> {
-    switch (pageInfo.type) {
-      case "master":
-        const master = await fetchDiscogsMaster(pageInfo.id);
-        return {
-          artists: master.artists,
-          tracklist: master.tracklist.filter((v) => v.type_ == "track"),
-        };
-      case "release":
-        const release = await fetchDiscogsRelease(pageInfo.id);
-        return {
-          artists: release.artists,
-          tracklist: release.tracklist.filter((v) => v.type_ == "track"),
-        };
-      case "other":
-        return null;
+  type ErrorContent = {
+    type: "error";
+    error: unknown;
+  };
+  type Content = TracklistContent | ErrorContent | null;
+  async function fetchContent(): Promise<Content> {
+    try {
+      switch (pageInfo.type) {
+        case "master":
+          const master = await fetchDiscogsMaster(pageInfo.id);
+          return {
+            type: "tracklist",
+            artists: master.artists,
+            tracklist: master.tracklist.filter((v) => v.type_ == "track"),
+          };
+        case "release":
+          const release = await fetchDiscogsRelease(pageInfo.id);
+          return {
+            type: "tracklist",
+            artists: release.artists,
+            tracklist: release.tracklist.filter((v) => v.type_ == "track"),
+          };
+        case "other":
+          return null;
+      }
+    } catch (error) {
+      return {
+        type: "error",
+        error,
+      };
     }
   }
-  const content = makeContent();
+  let content: Content = null;
 
   function formattedArtistName(artist: DiscogsArtist): string {
     const match = /^(?<name>.+) \([0-9]+\)$/.exec(artist.name);
@@ -78,11 +93,15 @@
     }
     window.open(url);
   }
+
+  onMount(async () => {
+    content = await fetchContent();
+  });
 </script>
 
-{#await content then content}
-  {#if content}
-    <div class="container">
+{#if content}
+  <div class="container" transition:fade={{ duration: 300 }}>
+    {#if content.type == "tracklist"}
       <div class="settings">
         <h1>Tracklist</h1>
         <div class="allArtists">
@@ -106,11 +125,7 @@
         {#key $allArtistsSetting}
           {#each content.tracklist as track}
             {@const title = formattedTrackTitle(content.artists, track)}
-            <button
-              class="track"
-              on:click={() => onTrackClick(title)}
-              transition:fade={{ duration: 300 }}
-            >
+            <button class="track" on:click={() => onTrackClick(title)}>
               {#if track.position.length > 0}
                 <b>{track.position}</b>
               {/if}
@@ -121,13 +136,11 @@
           {/each}
         {/key}
       </div>
-    </div>
-  {/if}
-{:catch error}
-  <div class="container">
-    <p class="error"><b>dscgs error</b><br />{error}</p>
+    {:else}
+      <p class="error"><b>dscgs error</b><br />{content.error}</p>
+    {/if}
   </div>
-{/await}
+{/if}
 
 <style>
   * {
