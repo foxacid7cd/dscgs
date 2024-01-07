@@ -86,7 +86,7 @@
       <div class="settings">
         <h1>Tracklist</h1>
         <div class="allArtists">
-          <label for="allArtists">All artists</label>
+          <label for="allArtists" style="padding-right: 2px">All artists</label>
           <input
             type="checkbox"
             bind:checked={$allArtistsSetting}
@@ -125,8 +125,7 @@
   {/if}
 {:catch error}
   <div class="container">
-    <h1 class="error">dscgs error</h1>
-    <p class="error">{error}</p>
+    <p class="error"><b>dscgs error</b><br />{error}</p>
   </div>
 {/await}
 
@@ -139,38 +138,55 @@
   }
 
   .settings {
+    padding-left: 8px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    font-size: small;
   }
 
   .allArtists {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 2px;
   }
 
   h1 {
     flex: 1;
-    padding-left: 8px;
   }
 
   select {
-    margin-left: 2px;
-    padding: 4px;
+    padding: 2px;
+    min-height: 20px;
+    border-radius: 4px;
+    font-size: small;
   }
 
   .tracklist {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
   }
 
-  .track {
+  button {
     padding: 8px;
     text-align: left;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+    background-color: #eaeaea;
+    color: #000;
+    border-radius: 4px;
+    border: 1px solid #000;
+  }
+
+  button:hover {
+    background-color: #d7d7d7;
+  }
+
+  button:active {
+    background-color: #cfcfcf;
   }
 
   .error {

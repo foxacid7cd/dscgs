@@ -1,6 +1,6 @@
-import gmFetch from "@sec-ant/gm-fetch";
 import { name, version } from "../../package.json";
 import { z } from "zod";
+import { GM } from "$";
 
 const DiscogsArtist = z.object({
   name: z.string(),
@@ -26,14 +26,23 @@ const DiscogsMaster = z.object({
 });
 export type DiscogsMaster = z.infer<typeof DiscogsMaster>;
 
-async function fetchDiscogsAPI(pathname: string): Promise<any> {
-  const response = await gmFetch(`https://api.discogs.com${pathname}`, {
-    method: "get",
-    headers: {
-      "User-Agent": `${name}/${version}`,
-    },
+function fetchDiscogsAPI(pathname: string): Promise<any> {
+  return new Promise<any>((resolve, reject) => {
+    GM.xmlHttpRequest({
+      url: `https://api.discogs.com${pathname}`,
+      method: "get",
+      headers: {
+        "User-Agent": `${name}/${version}`,
+      },
+      responseType: "json",
+      onload(event) {
+        resolve(event.response);
+      },
+      onerror(event) {
+        reject(event.error);
+      },
+    });
   });
-  return await response.json();
 }
 
 export async function fetchDiscogsRelease(id: string): Promise<DiscogsRelease> {
