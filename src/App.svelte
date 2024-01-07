@@ -7,7 +7,12 @@
   } from "./lib/discogs";
   import { getPageInfo } from "./lib/page";
   import { fade } from "svelte/transition";
-  import { makePlatformSearchURL, platform, platforms } from "./lib/platform";
+  import {
+    makePlatformSearchURL,
+    platformSetting,
+    platforms,
+    allArtistsSetting,
+  } from "./lib/settings";
 
   const pageInfo = getPageInfo();
 
@@ -36,27 +41,38 @@
   }
   const content = makeContent();
 
+  function formattedArtistName(artist: DiscogsArtist): string {
+    const match = /^(?<name>.+) \([0-9]+\)$/.exec(artist.name);
+    if (match && match.groups) {
+      return match.groups.name;
+    } else {
+      return artist.name;
+    }
+  }
+
   function formattedTrackTitle(
     pageArtists: DiscogsArtist[],
     track: DiscogsTrack,
   ): string {
-    let artist: string = "";
+    let artists: DiscogsArtist[] = [];
     if (track.artists && track.artists.length > 0) {
-      artist = track.artists.map((v) => v.name).join(", ");
+      artists = track.artists;
     } else if (pageArtists.length > 0) {
-      artist = pageArtists.map((v) => v.name).join(", ");
+      artists = pageArtists;
     }
-    if (artist) {
-      const match = /^(?<name>.+) \([0-9]+\)$/.exec(artist);
-      if (match && match.groups) {
-        artist = match.groups.name;
+    let artist: string = "";
+    if (artists.length > 0) {
+      if ($allArtistsSetting) {
+        artist = artists.map((v) => formattedArtistName(v)).join(", ");
+      } else {
+        artist = formattedArtistName(artists[0]);
       }
     }
     return [artist, track.title].filter((v) => v.length > 0).join(" - ");
   }
 
   function onTrackClick(title: string) {
-    const url = makePlatformSearchURL($platform, title);
+    const url = makePlatformSearchURL($platformSetting, title);
     if (!url) {
       return;
     }
@@ -69,9 +85,17 @@
     <div class="container">
       <div class="settings">
         <h1>Tracklist</h1>
+        <div class="allArtists">
+          <label for="allArtists">All artists</label>
+          <input
+            type="checkbox"
+            bind:checked={$allArtistsSetting}
+            id="allArtists"
+          />
+        </div>
         <div class="platform">
           <label for="platform">Open in</label>
-          <select bind:value={$platform}>
+          <select bind:value={$platformSetting}>
             {#each platforms as platform}
               <option value={platform.id}>{platform.name}</option>
             {/each}
@@ -79,21 +103,23 @@
         </div>
       </div>
       <div class="tracklist">
-        {#each content.tracklist as track}
-          {@const title = formattedTrackTitle(content.artists, track)}
-          <button
-            class="track"
-            on:click={() => onTrackClick(title)}
-            transition:fade={{ duration: 300 }}
-          >
-            {#if track.position.length > 0}
-              <b>{track.position}</b>
-            {/if}
-            <span style="margin-left: 4px">
-              {title}
-            </span>
-          </button>
-        {/each}
+        {#key $allArtistsSetting}
+          {#each content.tracklist as track}
+            {@const title = formattedTrackTitle(content.artists, track)}
+            <button
+              class="track"
+              on:click={() => onTrackClick(title)}
+              transition:fade={{ duration: 300 }}
+            >
+              {#if track.position.length > 0}
+                <b>{track.position}</b>
+              {/if}
+              <span style="margin-left: 4px">
+                {title}
+              </span>
+            </button>
+          {/each}
+        {/key}
       </div>
     </div>
   {/if}
@@ -110,14 +136,20 @@
     display: flex;
     flex-direction: column;
     justify-content: left;
-    border-radius: 4px;
-    gap: 4px;
   }
 
   .settings {
     display: flex;
     flex-direction: row;
     align-items: center;
+    gap: 16px;
+  }
+
+  .allArtists {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
   }
 
   h1 {
@@ -126,7 +158,7 @@
   }
 
   select {
-    margin-left: 4px;
+    margin-left: 2px;
     padding: 4px;
   }
 
