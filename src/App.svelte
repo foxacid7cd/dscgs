@@ -6,6 +6,7 @@
   } from "./lib/discogs";
   import { getPageInfo } from "./lib/page";
   import { fade } from "svelte/transition";
+  import { makePlatformSearchURL, platform, platforms } from "./lib/platform";
 
   const pageInfo = getPageInfo();
 
@@ -44,14 +45,29 @@
   const content = makeContent();
 
   function onTrackClick(track: DiscogsTrack) {
-    window.open(`https://music.youtube.com/search?q=${track.title}`);
+    const url = makePlatformSearchURL($platform, track.title);
+    if (!url) {
+      return;
+    }
+    window.open(url);
   }
 </script>
 
 {#if content}
   {#await content.tracklist then tracklist}
-    <div class="container">
-      <div class="tracklist" transition:fade={{ duration: 300 }}>
+    <div class="container" transition:fade={{ duration: 300 }}>
+      <div class="settings">
+        <h1>Tracklist</h1>
+        <div class="platform">
+          <label for="platform">Open in</label>
+          <select bind:value={$platform}>
+            {#each platforms as platform}
+              <option value={platform.id}>{platform.name}</option>
+            {/each}
+          </select>
+        </div>
+      </div>
+      <div class="tracklist">
         {#each tracklist as track}
           <button class="track" on:click={() => onTrackClick(track)}>
             <span>{track.title}</span>
@@ -61,7 +77,7 @@
     </div>
   {:catch error}
     <div class="container">
-      <p>{error}</p>
+      <h1>{error}</h1>
     </div>
   {/await}
 {/if}
@@ -73,6 +89,23 @@
     flex-direction: column;
     justify-content: left;
     border-radius: 4px;
+    gap: 4px;
+  }
+
+  .settings {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  h1 {
+    flex: 1;
+    padding-left: 8px;
+  }
+
+  select {
+    margin-left: 4px;
+    padding: 4px;
   }
 
   .tracklist {
