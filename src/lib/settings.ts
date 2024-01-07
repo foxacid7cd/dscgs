@@ -14,11 +14,14 @@ export const platforms: Platform[] = [
 ];
 
 export function makePlatformSearchURL(id: string, query: string): URL | null {
+  const encodedQuery = encodeURIComponent(query);
   switch (id) {
     case "ytmusic":
-      return new URL(`https://music.youtube.com/search?q=${query}`);
+      return new URL(`https://music.youtube.com/search?q=${encodedQuery}`);
     case "youtube":
-      return new URL(`https://www.youtube.com/results?search_query=${query}`);
+      return new URL(
+        `https://www.youtube.com/results?search_query=${encodedQuery}`,
+      );
     default:
       return null;
   }
