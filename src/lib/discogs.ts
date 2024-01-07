@@ -7,10 +7,14 @@ const DiscogsArtist = z.object({
 });
 export type DiscogsArtist = z.infer<typeof DiscogsArtist>;
 
+const DiscogsTrackType = z.enum(["track", "heading"]);
+export type DiscogsTrackType = z.infer<typeof DiscogsTrackType>;
+
 const DiscogsTrack = z.object({
   artists: z.array(DiscogsArtist).optional(),
   title: z.string(),
   position: z.string(),
+  type_: DiscogsTrackType,
 });
 export type DiscogsTrack = z.infer<typeof DiscogsTrack>;
 

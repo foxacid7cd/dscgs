@@ -27,13 +27,13 @@
         const master = await fetchDiscogsMaster(pageInfo.id);
         return {
           artists: master.artists,
-          tracklist: master.tracklist,
+          tracklist: master.tracklist.filter((v) => v.type_ == "track"),
         };
       case "release":
         const release = await fetchDiscogsRelease(pageInfo.id);
         return {
           artists: release.artists,
-          tracklist: release.tracklist,
+          tracklist: release.tracklist.filter((v) => v.type_ == "track"),
         };
       case "other":
         return null;
@@ -130,11 +130,12 @@
 {/await}
 
 <style>
+  * {
+    box-sizing: border-box;
+  }
+
   .container {
     margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: left;
   }
 
   .settings {
@@ -178,7 +179,7 @@
     background-color: #f0f0f0;
     color: #000;
     border-radius: 4px;
-    border: 1px solid #000;
+    border: 1px solid gray;
   }
 
   button:hover {
