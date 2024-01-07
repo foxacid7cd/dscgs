@@ -8,7 +8,9 @@ const DiscogsArtist = z.object({
 export type DiscogsArtist = z.infer<typeof DiscogsArtist>;
 
 const DiscogsTrack = z.object({
+  artists: z.array(DiscogsArtist).optional(),
   title: z.string(),
+  position: z.string(),
 });
 export type DiscogsTrack = z.infer<typeof DiscogsTrack>;
 
