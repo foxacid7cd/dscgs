@@ -90,6 +90,17 @@
     return formattedTitle(track.title, artists);
   }
 
+  function contentTitleBackgroundColor(): string {
+    switch (pageInfo.type) {
+      case "master":
+        return "#900";
+      case "release":
+        return "#090";
+      case "other":
+        return "#000";
+    }
+  }
+
   function onTrackClick(title: string) {
     const url = makePlatformSearchURL($platformSetting, title);
     if (!url) {
@@ -104,60 +115,65 @@
 </script>
 
 {#if content}
-  <div class="container" transition:fade={{ duration: 200 }}>
-    {#if content.type == "tracklist"}
-      <div class="header">
-        <div class="content-title cell">
-          {formattedTitle(content.title, content.artists)}
-        </div>
-        <div style="flex: 1;"></div>
-        <div class="settings">
-          <div class="allArtists cell">
-            <label for="allArtists">All artists</label>
-            <input
-              type="checkbox"
-              bind:checked={$allArtistsSetting}
-              id="allArtists"
-            />
+  <div id="app">
+    <div class="container" transition:fade={{ duration: 300 }}>
+      {#if content.type == "tracklist"}
+        <div class="header">
+          <div
+            class="content-title cell"
+            style:background-color={contentTitleBackgroundColor()}
+          >
+            {formattedTitle(content.title, content.artists)}
           </div>
-          <div class="platform cell">
-            <select id="platform" bind:value={$platformSetting}>
-              {#each platforms as platform}
-                <option value={platform.id}>{platform.name}</option>
-              {/each}
-            </select>
+          <div style="flex: 1;"></div>
+          <div class="settings">
+            <div class="allArtists cell">
+              <label for="allArtists">All artists</label>
+              <input
+                type="checkbox"
+                bind:checked={$allArtistsSetting}
+                id="allArtists"
+              />
+            </div>
+            <div class="platform cell">
+              <select id="platform" bind:value={$platformSetting}>
+                {#each platforms as platform}
+                  <option value={platform.id}>{platform.name}</option>
+                {/each}
+              </select>
+            </div>
+            <div class="info cell">
+              {name}
+              {version}
+            </div>
           </div>
         </div>
-        <div class="info cell">
-          {name}
-          {version}
+        <div class="tracklist">
+          {#key $allArtistsSetting}
+            {#each content.tracklist as track}
+              {@const title = formattedTrackTitle(content.artists, track)}
+              <button class="track" on:click={() => onTrackClick(title)}>
+                {#if track.position.length > 0}
+                  <div class="position">
+                    <b>{track.position}</b>
+                  </div>
+                {/if}
+                <div class="title">
+                  {title}
+                </div>
+                {#if track.duration.length > 0}
+                  <div class="duration">
+                    {track.duration}
+                  </div>
+                {/if}
+              </button>
+            {/each}
+          {/key}
         </div>
-      </div>
-      <div class="tracklist">
-        {#key $allArtistsSetting}
-          {#each content.tracklist as track}
-            {@const title = formattedTrackTitle(content.artists, track)}
-            <button class="track" on:click={() => onTrackClick(title)}>
-              {#if track.position.length > 0}
-                <div class="position">
-                  <b>{track.position}</b>
-                </div>
-              {/if}
-              <div class="title">
-                {title}
-              </div>
-              {#if track.duration.length > 0}
-                <div class="duration">
-                  {track.duration}
-                </div>
-              {/if}
-            </button>
-          {/each}
-        {/key}
-      </div>
-    {:else}
-      <p class="error"><b>dscgs error</b><br />{content.error}</p>
-    {/if}
+      {:else}
+        <p class="error"><b>dscgs error</b><br />{content.error}</p>
+      {/if}
+    </div>
   </div>
 {/if}
 
@@ -166,6 +182,20 @@
     font-family: sans-serif;
     font-size: 13px;
     box-sizing: border-box;
+  }
+
+  #app {
+    max-width: calc(1288px + 4em);
+    width: 100%;
+    margin: 0 auto;
+    margin-top: 1.5rem;
+    padding: 0 2em;
+    display: flex;
+    justify-content: left;
+
+    @media (max-width: 1100px) {
+      padding: 0 8px;
+    }
   }
 
   select {
@@ -178,15 +208,10 @@
   }
 
   .container {
-    max-width: calc(1288px + 4em);
+    max-width: 640px;
     width: 100%;
-    margin: 0 auto;
-    margin-top: 1.5rem;
-    padding: 0 2em;
-
-    @media (max-width: 1100px) {
-      padding: 0 8px;
-    }
+    padding: 12px;
+    border: 1px solid #bbb;
   }
 
   .header {
@@ -200,13 +225,12 @@
 
   .info {
     color: #fff;
-    background-color: #00a;
+    background-color: #009;
     font-weight: bold;
   }
 
   .content-title {
     color: #fff;
-    background-color: #080;
     font-weight: bold;
   }
 
@@ -217,12 +241,10 @@
     gap: 12px;
   }
 
-  .settings > * {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 2px;
+  .allArtists,
+  .platform {
     background-color: #eee;
+    gap: 2px;
   }
 
   .tracklist {
