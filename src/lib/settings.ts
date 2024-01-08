@@ -9,7 +9,7 @@ export type Platform = {
   name: string;
 };
 export const platforms: Platform[] = [
-  { id: "ytmusic", name: "YouTube Music" },
+  { id: "ytmusic", name: "YTMusic" },
   { id: "youtube", name: "YouTube" },
 ];
 

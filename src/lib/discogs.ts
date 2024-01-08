@@ -20,12 +20,14 @@ const DiscogsTrack = z.object({
 export type DiscogsTrack = z.infer<typeof DiscogsTrack>;
 
 const DiscogsRelease = z.object({
+  title: z.string(),
   artists: z.array(DiscogsArtist),
   tracklist: z.array(DiscogsTrack),
 });
 export type DiscogsRelease = z.infer<typeof DiscogsRelease>;
 
 const DiscogsMaster = z.object({
+  title: z.string(),
   artists: z.array(DiscogsArtist),
   tracklist: z.array(DiscogsTrack),
 });

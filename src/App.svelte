@@ -14,11 +14,13 @@
     allArtistsSetting,
   } from "./lib/settings";
   import { onMount } from "svelte";
+  import { name, version } from "../package.json";
 
   const pageInfo = getPageInfo();
 
   type TracklistContent = {
     type: "tracklist";
+    title: string;
     artists: DiscogsArtist[];
     tracklist: DiscogsTrack[];
   };
@@ -34,6 +36,7 @@
           const master = await fetchDiscogsMaster(pageInfo.id);
           return {
             type: "tracklist",
+            title: master.title,
             artists: master.artists,
             tracklist: master.tracklist.filter((v) => v.type_ == "track"),
           };
@@ -41,6 +44,7 @@
           const release = await fetchDiscogsRelease(pageInfo.id);
           return {
             type: "tracklist",
+            title: release.title,
             artists: release.artists,
             tracklist: release.tracklist.filter((v) => v.type_ == "track"),
           };
@@ -65,6 +69,11 @@
     }
   }
 
+  function formattedTitle(title: string, artists: DiscogsArtist[]): string {
+    const formattedArtistNames = artists.map(formattedArtistName).join(", ");
+    return [formattedArtistNames, title].join(" - ");
+  }
+
   function formattedTrackTitle(
     pageArtists: DiscogsArtist[],
     track: DiscogsTrack,
@@ -75,15 +84,10 @@
     } else if (pageArtists.length > 0) {
       artists = pageArtists;
     }
-    let artist: string = "";
-    if (artists.length > 0) {
-      if ($allArtistsSetting) {
-        artist = artists.map((v) => formattedArtistName(v)).join(", ");
-      } else {
-        artist = formattedArtistName(artists[0]);
-      }
+    if (!$allArtistsSetting) {
+      artists = artists.slice(0, 1);
     }
-    return [artist, track.title].filter((v) => v.length > 0).join(" - ");
+    return formattedTitle(track.title, artists);
   }
 
   function onTrackClick(title: string) {
@@ -100,25 +104,33 @@
 </script>
 
 {#if content}
-  <div class="container" transition:fade={{ duration: 300 }}>
+  <div class="container" transition:fade={{ duration: 200 }}>
     {#if content.type == "tracklist"}
-      <div class="settings">
-        <h1>Tracklist</h1>
-        <div class="allArtists">
-          <label for="allArtists" style="padding-right: 2px">All artists</label>
-          <input
-            type="checkbox"
-            bind:checked={$allArtistsSetting}
-            id="allArtists"
-          />
+      <div class="header">
+        <div class="content-title cell">
+          {formattedTitle(content.title, content.artists)}
         </div>
-        <div class="platform">
-          <label for="platform">Open in</label>
-          <select bind:value={$platformSetting}>
-            {#each platforms as platform}
-              <option value={platform.id}>{platform.name}</option>
-            {/each}
-          </select>
+        <div style="flex: 1;"></div>
+        <div class="settings">
+          <div class="allArtists cell">
+            <label for="allArtists">All artists</label>
+            <input
+              type="checkbox"
+              bind:checked={$allArtistsSetting}
+              id="allArtists"
+            />
+          </div>
+          <div class="platform cell">
+            <select id="platform" bind:value={$platformSetting}>
+              {#each platforms as platform}
+                <option value={platform.id}>{platform.name}</option>
+              {/each}
+            </select>
+          </div>
+        </div>
+        <div class="info cell">
+          {name}
+          {version}
         </div>
       </div>
       <div class="tracklist">
@@ -151,37 +163,66 @@
 
 <style>
   * {
+    font-family: sans-serif;
+    font-size: 13px;
     box-sizing: border-box;
   }
 
+  select {
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    text-decoration-line: underline;
+  }
+
   .container {
-    margin-bottom: 20px;
+    max-width: calc(1288px + 4em);
+    width: 100%;
+    margin: 0 auto;
+    margin-top: 1.5rem;
+    padding: 0 2em;
+
+    @media (max-width: 1100px) {
+      padding: 0 8px;
+    }
+  }
+
+  .header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .info {
+    color: #fff;
+    background-color: #00a;
+    font-weight: bold;
+  }
+
+  .content-title {
+    color: #fff;
+    background-color: #080;
+    font-weight: bold;
   }
 
   .settings {
-    padding-left: 8px;
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 12px;
-    font-size: small;
   }
 
-  .allArtists {
+  .settings > * {
     display: flex;
     flex-direction: row;
     align-items: center;
-  }
-
-  h1 {
-    flex: 1;
-  }
-
-  select {
-    padding: 2px;
-    min-height: 20px;
-    border-radius: 4px;
-    font-size: small;
+    gap: 2px;
+    background-color: #eee;
   }
 
   .tracklist {
@@ -191,14 +232,13 @@
   }
 
   button {
-    padding: 8px;
+    font-size: 12px;
+    padding: 9px;
     text-align: left;
-    border: none;
-    font-family: inherit;
     cursor: pointer;
     background-color: #eee;
     border-radius: 4px;
-    border: 1px solid #333;
+    border: 1px solid #bbb;
     display: flex;
     flex-direction: row;
     gap: 8px;
@@ -210,12 +250,6 @@
 
   button:active {
     background-color: #ccc;
-  }
-
-  button,
-  select,
-  label {
-    font-size: 13px;
   }
 
   .track > .position {
@@ -233,5 +267,15 @@
 
   .error {
     color: darkred;
+  }
+
+  .cell {
+    height: 28px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
   }
 </style>
