@@ -142,10 +142,6 @@
                 {/each}
               </select>
             </div>
-            <div class="info cell">
-              {name}
-              {version}
-            </div>
           </div>
         </div>
         <div class="tracklist">
@@ -169,6 +165,10 @@
               </button>
             {/each}
           {/key}
+        </div>
+        <div class="info">
+          {name}
+          {version}
         </div>
       {:else}
         <p class="error"><b>dscgs error</b><br />{content.error}</p>
@@ -224,9 +224,10 @@
   }
 
   .info {
-    color: #fff;
-    background-color: #009;
-    font-weight: bold;
+    color: #444;
+    margin-top: 8px;
+    padding-left: 4px;
+    text-align: right;
   }
 
   .content-title {
