@@ -127,11 +127,18 @@
             {@const title = formattedTrackTitle(content.artists, track)}
             <button class="track" on:click={() => onTrackClick(title)}>
               {#if track.position.length > 0}
-                <b>{track.position}</b>
+                <div class="position">
+                  <b>{track.position}</b>
+                </div>
               {/if}
-              <span style="margin-left: 4px">
+              <div class="title">
                 {title}
-              </span>
+              </div>
+              {#if track.duration.length > 0}
+                <div class="duration">
+                  {track.duration}
+                </div>
+              {/if}
             </button>
           {/each}
         {/key}
@@ -189,18 +196,39 @@
     border: none;
     font-family: inherit;
     cursor: pointer;
-    background-color: #f0f0f0;
-    color: #000;
+    background-color: #eee;
     border-radius: 4px;
-    border: 1px solid gray;
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
   }
 
   button:hover {
-    background-color: #d7d7d7;
+    background-color: #ddd;
   }
 
   button:active {
-    background-color: #cfcfcf;
+    background-color: #ccc;
+  }
+
+  button,
+  select,
+  label {
+    font-size: 13px;
+  }
+
+  .track > .position {
+    color: #333;
+  }
+
+  .track > .title {
+    flex: 1;
+    color: #000;
+  }
+
+  .track > .duration {
+    color: #333;
   }
 
   .error {

@@ -15,6 +15,7 @@ const DiscogsTrack = z.object({
   title: z.string(),
   position: z.string(),
   type_: DiscogsTrackType,
+  duration: z.string(),
 });
 export type DiscogsTrack = z.infer<typeof DiscogsTrack>;
 
