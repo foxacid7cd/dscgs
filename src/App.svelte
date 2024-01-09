@@ -123,7 +123,7 @@
   }
 
   .container {
-    max-width: 560px;
+    max-width: 640px;
     width: 100%;
     margin: 0;
     margin-bottom: 1em;
@@ -231,7 +231,8 @@
   }
 
   .track > .duration {
-    font-weight: lighter;
+    font-style: italic;
+    font-size: 12px;
   }
 
   .cell {
