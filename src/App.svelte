@@ -1,12 +1,12 @@
 <script lang="ts">
   import { type DiscogsTrack, type DiscogsArtist } from "./lib/discogs";
   import { type MasterPageInfo, type ReleasePageInfo } from "./lib/page";
-  import { fade, blur } from "svelte/transition";
+  import { fade } from "svelte/transition";
   import { settings } from "./lib/stores";
   import type { TracklistContent } from "./lib/tracklist";
 
   export let pageInfo: MasterPageInfo | ReleasePageInfo;
-  export let tracklistContent: Promise<TracklistContent>;
+  export let content: TracklistContent;
 
   function formattedArtistName(artist: DiscogsArtist): string {
     const match = /^(?<name>.+) \([0-9]+\)$/.exec(artist.name);
@@ -38,15 +38,6 @@
     return formattedTitle(track.title, artists);
   }
 
-  function makeContentTitle(): string {
-    switch (pageInfo.type) {
-      case "master":
-        return `Master Tracklist`;
-      case "release":
-        return `Release Tracklist`;
-    }
-  }
-
   function makeSearchQueryURL(query: string): URL {
     const encodedQuery = encodeURIComponent(query);
     if ($settings.isYTMusic) {
@@ -64,64 +55,60 @@
   }
 </script>
 
-{#await tracklistContent then content}
-  <div class="dscgs-wrapper">
-    <div class="dscgs-container" in:fade={{ duration: 200 }}>
-      <div class="dscgs-header">
-        <div class="dscgs-content-title dscgs-cell">
-          {makeContentTitle()}
-        </div>
-        <div style="flex: 1" />
-        <div class="dscgs-settings">
-          <label class="isAllArtists dscgs-cell">
-            <label for="isAllArtists">Include all artists</label>
-            <input
-              type="checkbox"
-              bind:checked={$settings.isAllArtists}
-              id="isAllArtists"
-            />
-          </label>
-          <label class="isYTMusic dscgs-cell">
-            <label for="isYTMusic">YouTube Music</label>
-            <input
-              type="checkbox"
-              bind:checked={$settings.isYTMusic}
-              id="isYTMusic"
-            />
-          </label>
-        </div>
+<div class="wrapper">
+  <div class="container" in:fade={{ duration: 200 }}>
+    <div class="header">
+      <div class="content-title cell">Tracklist</div>
+      <div style="flex: 1" />
+      <div class="settings">
+        <label class="isAllArtists cell">
+          <label for="isAllArtists">Include all artists</label>
+          <input
+            type="checkbox"
+            bind:checked={$settings.isAllArtists}
+            id="isAllArtists"
+          />
+        </label>
+        <label class="isYTMusic cell">
+          <label for="isYTMusic">YouTube Music</label>
+          <input
+            type="checkbox"
+            bind:checked={$settings.isYTMusic}
+            id="isYTMusic"
+          />
+        </label>
       </div>
-      {#key $settings.isAllArtists}
-        <div class="dscgs-tracklist">
-          {#each content.tracklist as track}
-            {#if track.type_ == "track"}
-              {@const title = formattedTrackTitle(content.artists, track)}
-              <button class="dscgs-track" on:click={() => onTrackClick(title)}>
-                {#if track.position.length > 0}
-                  <div class="dscgs-position">
-                    {track.position}
-                  </div>
-                {/if}
-                <div class="dscgs-title">
-                  {title}
-                </div>
-                {#if track.duration.length > 0}
-                  <div class="dscgs-duration">
-                    {track.duration}
-                  </div>
-                {/if}
-              </button>
-            {:else if track.type_ == "heading"}
-              <div class="dscgs-heading">
-                {track.title}
-              </div>
-            {/if}
-          {/each}
-        </div>
-      {/key}
     </div>
+    {#key $settings.isAllArtists}
+      <div class="tracklist">
+        {#each content.tracklist as track}
+          {#if track.type_ == "track"}
+            {@const title = formattedTrackTitle(content.artists, track)}
+            <button class="track" on:click={() => onTrackClick(title)}>
+              {#if track.position.length > 0}
+                <div class="position">
+                  {track.position}
+                </div>
+              {/if}
+              <div class="title">
+                {title}
+              </div>
+              {#if track.duration.length > 0}
+                <div class="duration">
+                  {track.duration}
+                </div>
+              {/if}
+            </button>
+          {:else if track.type_ == "heading"}
+            <div class="heading">
+              {track.title}
+            </div>
+          {/if}
+        {/each}
+      </div>
+    {/key}
   </div>
-{/await}
+</div>
 
 <style>
   * {
@@ -130,30 +117,23 @@
     box-sizing: border-box;
   }
 
-  .dscgs-wrapper {
+  .wrapper {
     max-width: calc(1288px + 4em);
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 2em;
     display: flex;
     justify-content: left;
-
-    @media (max-width: 1100px) {
-      padding: 0 8px;
-    }
   }
 
-  .dscgs-container {
-    max-width: 600px;
+  .container {
+    max-width: 560px;
     width: 100%;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     border: 1px solid #ccc;
+    border-radius: 4px;
     padding: 8px;
-    background-color: #efefef;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #ebebe4;
   }
 
-  .dscgs-header {
+  .header {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -162,7 +142,7 @@
     margin-bottom: 6px;
   }
 
-  .dscgs-content-title {
+  .content-title {
     padding-left: 12px;
     padding-right: 12px;
     font-weight: bold;
@@ -170,14 +150,14 @@
     border: 1px solid #bbb;
   }
 
-  .dscgs-settings {
+  .settings {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 6px;
   }
 
-  .dscgs-settings > * {
+  .settings > * {
     gap: 5px;
     padding-left: 12px;
     padding-right: 12px;
@@ -185,18 +165,18 @@
     border: 1px solid #bbb;
   }
 
-  .dscgs-settings label,
-  .dscgs-settings input[type="checkbox"] {
+  .settings label,
+  .settings input[type="checkbox"] {
     cursor: pointer;
   }
 
-  .dscgs-tracklist {
+  .tracklist {
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
 
-  .dscgs-tracklist > .dscgs-heading {
+  .tracklist > .heading {
     padding-top: 8px;
     padding-bottom: 2px;
     padding-left: 8px;
@@ -230,26 +210,28 @@
     background-color: #ccc;
   }
 
-  .dscgs-tracklist > .dscgs-track {
+  .tracklist > .track {
     display: flex;
     flex-direction: row;
-    gap: 6px;
+    align-items: first baseline;
+    gap: 8px;
   }
 
-  .dscgs-track > .dscgs-position {
+  .track > .position {
     font-weight: bold;
   }
 
-  .dscgs-track > .dscgs-title {
+  .track > .title {
     flex: 1;
   }
 
-  .dscgs-track > .dscgs-duration {
-    color: #000;
+  .track > .duration {
+    font-weight: lighter;
   }
 
-  .dscgs-cell {
-    height: 30px;
+  .cell {
+    padding-top: 8px;
+    padding-bottom: 8px;
     border-radius: 4px;
     display: flex;
     align-items: center;

@@ -15,7 +15,8 @@ export default defineConfig({
         author: author.name,
         match: ["https://www.discogs.com/*"],
         grant: ["GM.xmlHttpRequest", "GM.getValue", "GM.setValue"],
-        "run-at": "document-end",
+        "inject-into": "content",
+        "run-at": "document-idle",
       },
       server: {
         open: false,
