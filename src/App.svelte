@@ -1,7 +1,7 @@
 <script lang="ts">
   import { type DiscogsTrack, type DiscogsArtist } from "./lib/discogs";
   import { type MasterPageInfo, type ReleasePageInfo } from "./lib/page";
-  import { fade } from "svelte/transition";
+  import { fade, blur } from "svelte/transition";
   import { settings } from "./lib/stores";
   import type { TracklistContent } from "./lib/tracklist";
 
@@ -65,15 +65,15 @@
 </script>
 
 {#await tracklistContent then content}
-  <div class="wrapper">
-    <div class="container" transition:fade={{ duration: 200 }}>
-      <div class="header">
-        <div class="content-title cell">
+  <div class="dscgs-wrapper">
+    <div class="dscgs-container" in:fade={{ duration: 200 }}>
+      <div class="dscgs-header">
+        <div class="dscgs-content-title dscgs-cell">
           {makeContentTitle()}
         </div>
         <div style="flex: 1" />
-        <div class="settings">
-          <label class="isAllArtists cell">
+        <div class="dscgs-settings">
+          <label class="isAllArtists dscgs-cell">
             <label for="isAllArtists">Include all artists</label>
             <input
               type="checkbox"
@@ -81,7 +81,7 @@
               id="isAllArtists"
             />
           </label>
-          <label class="isYTMusic cell">
+          <label class="isYTMusic dscgs-cell">
             <label for="isYTMusic">YouTube Music</label>
             <input
               type="checkbox"
@@ -91,46 +91,46 @@
           </label>
         </div>
       </div>
-      <div class="tracklist">
-        {#key $settings.isAllArtists}
+      {#key $settings.isAllArtists}
+        <div class="dscgs-tracklist">
           {#each content.tracklist as track}
             {#if track.type_ == "track"}
               {@const title = formattedTrackTitle(content.artists, track)}
-              <button class="track" on:click={() => onTrackClick(title)}>
+              <button class="dscgs-track" on:click={() => onTrackClick(title)}>
                 {#if track.position.length > 0}
-                  <div class="position">
+                  <div class="dscgs-position">
                     {track.position}
                   </div>
                 {/if}
-                <div class="title">
+                <div class="dscgs-title">
                   {title}
                 </div>
                 {#if track.duration.length > 0}
-                  <div class="duration">
+                  <div class="dscgs-duration">
                     {track.duration}
                   </div>
                 {/if}
               </button>
             {:else if track.type_ == "heading"}
-              <div class="heading">
+              <div class="dscgs-heading">
                 {track.title}
               </div>
             {/if}
           {/each}
-        {/key}
-      </div>
+        </div>
+      {/key}
     </div>
   </div>
 {/await}
 
 <style>
   * {
-    font-family: sans-serif;
+    font-family: system-ui, sans-serif;
     font-size: 13px;
     box-sizing: border-box;
   }
 
-  .wrapper {
+  .dscgs-wrapper {
     max-width: calc(1288px + 4em);
     width: 100%;
     margin: 0 auto;
@@ -143,17 +143,17 @@
     }
   }
 
-  .container {
+  .dscgs-container {
     max-width: 600px;
     width: 100%;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     border: 1px solid #ccc;
     padding: 8px;
     background-color: #efefef;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   }
 
-  .header {
+  .dscgs-header {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -162,7 +162,7 @@
     margin-bottom: 6px;
   }
 
-  .content-title {
+  .dscgs-content-title {
     padding-left: 12px;
     padding-right: 12px;
     font-weight: bold;
@@ -170,14 +170,14 @@
     border: 1px solid #bbb;
   }
 
-  .settings {
+  .dscgs-settings {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 6px;
   }
 
-  .settings > * {
+  .dscgs-settings > * {
     gap: 5px;
     padding-left: 12px;
     padding-right: 12px;
@@ -185,18 +185,18 @@
     border: 1px solid #bbb;
   }
 
-  .settings label,
-  .settings input[type="checkbox"] {
+  .dscgs-settings label,
+  .dscgs-settings input[type="checkbox"] {
     cursor: pointer;
   }
 
-  .tracklist {
+  .dscgs-tracklist {
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
 
-  .tracklist > .heading {
+  .dscgs-tracklist > .dscgs-heading {
     padding-top: 8px;
     padding-bottom: 2px;
     padding-left: 8px;
@@ -208,39 +208,47 @@
     gap: 8px;
   }
 
-  .tracklist > .track {
-    padding: 8px;
-    text-align: left;
+  button {
+    appearance: none;
+    color: #000;
     cursor: pointer;
+    text-align: left;
     background-color: #fff;
     border-radius: 4px;
     border: 1px solid #bbb;
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 
-  .tracklist > .track:hover {
+  button:hover {
     background-color: #ddd;
   }
 
-  .tracklist > .track:active {
+  button:active {
     background-color: #ccc;
   }
 
-  .track > .position {
+  .dscgs-tracklist > .dscgs-track {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .dscgs-track > .dscgs-position {
     font-weight: bold;
   }
 
-  .track > .title {
+  .dscgs-track > .dscgs-title {
     flex: 1;
   }
 
-  .track > .duration {
+  .dscgs-track > .dscgs-duration {
     color: #000;
   }
 
-  .cell {
+  .dscgs-cell {
     height: 30px;
     border-radius: 4px;
     display: flex;
@@ -253,7 +261,6 @@
     border-radius: 4px;
     border: 1px solid #000;
     margin: 0;
-    margin-right: -1px;
     width: 1.1em;
     height: 1.1em;
     font: inherit;

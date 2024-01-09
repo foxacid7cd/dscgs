@@ -6,13 +6,13 @@ function waitForContentElement(
   handler: (element: Element) => void,
   counter: number = 0,
 ) {
-  const element = document.querySelector("#app [class^=content_]");
+  const element = document.querySelector("#page");
   if (element) {
     handler(element);
   } else if (counter < 100) {
     setTimeout(() => {
       waitForContentElement(handler, counter + 1);
-    }, 250);
+    }, 200);
   } else {
     console.error("waiting for element timed out");
   }
