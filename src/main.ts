@@ -51,7 +51,6 @@ async function main(): Promise<void> {
         return div;
       })(),
       props: {
-        pageInfo,
         content,
       },
     });

@@ -5,7 +5,6 @@
   import { settings } from "./lib/stores";
   import type { TracklistContent } from "./lib/tracklist";
 
-  export let pageInfo: MasterPageInfo | ReleasePageInfo;
   export let content: TracklistContent;
 
   function formattedArtistName(artist: DiscogsArtist): string {
@@ -126,11 +125,17 @@
   .container {
     max-width: 560px;
     width: 100%;
-    margin-bottom: 1rem;
+    margin: 0;
+    margin-bottom: 1em;
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 8px;
-    background-color: #ebebe4;
+    background-color: rgb(245, 244, 236);
+
+    @media (max-width: 700px) {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
   }
 
   .header {
@@ -147,7 +152,7 @@
     padding-right: 12px;
     font-weight: bold;
     background-color: #fff;
-    border: 1px solid #bbb;
+    border: 1px solid rgb(206, 205, 198);
   }
 
   .settings {
