@@ -71,7 +71,7 @@
         <div class="content-title cell">
           {makeContentTitle()}
         </div>
-        <hr style="flex: 1" />
+        <div style="flex: 1" />
         <div class="settings">
           <label class="isAllArtists cell">
             <label for="isAllArtists">Include all artists</label>
@@ -150,7 +150,7 @@
     border: 1px solid #ccc;
     padding: 8px;
     background-color: #efefef;
-    box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   }
 
   .header {
@@ -160,11 +160,6 @@
     flex-wrap: wrap;
     gap: 6px;
     margin-bottom: 6px;
-  }
-
-  hr {
-    border: 0;
-    border-top: 1px solid #bbb;
   }
 
   .content-title {
@@ -183,11 +178,16 @@
   }
 
   .settings > * {
-    gap: 2px;
-    padding-left: 11px;
-    padding-right: 8px;
+    gap: 5px;
+    padding-left: 12px;
+    padding-right: 12px;
     background-color: #fff;
     border: 1px solid #bbb;
+  }
+
+  .settings label,
+  .settings input[type="checkbox"] {
+    cursor: pointer;
   }
 
   .tracklist {
@@ -245,5 +245,35 @@
     border-radius: 4px;
     display: flex;
     align-items: center;
+  }
+
+  input[type="checkbox"] {
+    appearance: none;
+    outline: none;
+    border-radius: 4px;
+    border: 1px solid #000;
+    margin: 0;
+    margin-right: -1px;
+    width: 1.1em;
+    height: 1.1em;
+    font: inherit;
+    display: grid;
+    place-content: center;
+    color: #3252d1;
+  }
+
+  input[type="checkbox"]::before {
+    content: "";
+    width: 0.7em;
+    height: 0.7em;
+    opacity: 0;
+    transition: 50ms opacity;
+    box-shadow: inset 1.2em 1.2em currentColor;
+    transform-origin: bottom left;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+
+  input[type="checkbox"]:checked::before {
+    opacity: 1;
   }
 </style>

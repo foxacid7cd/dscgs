@@ -12,7 +12,7 @@ function waitForContentElement(
   } else if (counter < 100) {
     setTimeout(() => {
       waitForContentElement(handler, counter + 1);
-    }, 200);
+    }, 250);
   } else {
     console.error("waiting for element timed out");
   }
