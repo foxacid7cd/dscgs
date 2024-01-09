@@ -1,64 +1,12 @@
 <script lang="ts">
-  import {
-    fetchDiscogsMaster,
-    type DiscogsTrack,
-    fetchDiscogsRelease,
-    type DiscogsArtist,
-  } from "./lib/discogs";
-  import { getPageInfo } from "./lib/page";
+  import { type DiscogsTrack, type DiscogsArtist } from "./lib/discogs";
+  import { type MasterPageInfo, type ReleasePageInfo } from "./lib/page";
   import { fade } from "svelte/transition";
-  import {
-    makePlatformSearchURL,
-    platformSetting,
-    platforms,
-    allArtistsSetting,
-  } from "./lib/settings";
-  import { onMount } from "svelte";
-  import { name, version } from "../package.json";
+  import { settings } from "./lib/stores";
+  import type { TracklistContent } from "./lib/tracklist";
 
-  const pageInfo = getPageInfo();
-
-  type TracklistContent = {
-    type: "tracklist";
-    title: string;
-    artists: DiscogsArtist[];
-    tracklist: DiscogsTrack[];
-  };
-  type ErrorContent = {
-    type: "error";
-    error: unknown;
-  };
-  type Content = TracklistContent | ErrorContent | null;
-  async function fetchContent(): Promise<Content> {
-    try {
-      switch (pageInfo.type) {
-        case "master":
-          const master = await fetchDiscogsMaster(pageInfo.id);
-          return {
-            type: "tracklist",
-            title: master.title,
-            artists: master.artists,
-            tracklist: master.tracklist.filter((v) => v.type_ == "track"),
-          };
-        case "release":
-          const release = await fetchDiscogsRelease(pageInfo.id);
-          return {
-            type: "tracklist",
-            title: release.title,
-            artists: release.artists,
-            tracklist: release.tracklist.filter((v) => v.type_ == "track"),
-          };
-        case "other":
-          return null;
-      }
-    } catch (error) {
-      return {
-        type: "error",
-        error,
-      };
-    }
-  }
-  let content: Content = null;
+  export let pageInfo: MasterPageInfo | ReleasePageInfo;
+  export let tracklistContent: Promise<TracklistContent>;
 
   function formattedArtistName(artist: DiscogsArtist): string {
     const match = /^(?<name>.+) \([0-9]+\)$/.exec(artist.name);
@@ -84,69 +32,69 @@
     } else if (pageArtists.length > 0) {
       artists = pageArtists;
     }
-    if (!$allArtistsSetting) {
+    if (!$settings.isAllArtists) {
       artists = artists.slice(0, 1);
     }
     return formattedTitle(track.title, artists);
   }
 
-  function contentTitleBackgroundColor(): string {
+  function makeContentTitle(): string {
     switch (pageInfo.type) {
       case "master":
-        return "#900";
+        return `Master Tracklist`;
       case "release":
-        return "#090";
-      case "other":
-        return "#000";
+        return `Release Tracklist`;
+    }
+  }
+
+  function makeSearchQueryURL(query: string): URL {
+    const encodedQuery = encodeURIComponent(query);
+    if ($settings.isYTMusic) {
+      return new URL(`https://music.youtube.com/search?q=${encodedQuery}`);
+    } else {
+      return new URL(
+        `https://www.youtube.com/results?search_query=${encodedQuery}`,
+      );
     }
   }
 
   function onTrackClick(title: string) {
-    const url = makePlatformSearchURL($platformSetting, title);
-    if (!url) {
-      return;
-    }
+    const url = makeSearchQueryURL(title);
     window.open(url);
   }
-
-  onMount(async () => {
-    content = await fetchContent();
-  });
 </script>
 
-{#if content}
-  <div id="app">
-    <div class="container" transition:fade={{ duration: 300 }}>
-      {#if content.type == "tracklist"}
-        <div class="header">
-          <div
-            class="content-title cell"
-            style:background-color={contentTitleBackgroundColor()}
-          >
-            {formattedTitle(content.title, content.artists)}
-          </div>
-          <div style="flex: 1;"></div>
-          <div class="settings">
-            <div class="allArtists cell">
-              <label for="allArtists">All artists</label>
-              <input
-                type="checkbox"
-                bind:checked={$allArtistsSetting}
-                id="allArtists"
-              />
-            </div>
-            <div class="platform cell">
-              <select id="platform" bind:value={$platformSetting}>
-                {#each platforms as platform}
-                  <option value={platform.id}>{platform.name}</option>
-                {/each}
-              </select>
-            </div>
-          </div>
+{#await tracklistContent then content}
+  <div class="wrapper">
+    <div class="container" transition:fade={{ duration: 200 }}>
+      <div class="header">
+        <div class="content-title cell">
+          {makeContentTitle()}
         </div>
-        <div class="tracklist">
-          {#key $allArtistsSetting}
-            {#each content.tracklist as track}
+        <hr style="flex: 1" />
+        <div class="settings">
+          <label class="isAllArtists cell">
+            <label for="isAllArtists">Include all artists</label>
+            <input
+              type="checkbox"
+              bind:checked={$settings.isAllArtists}
+              id="isAllArtists"
+            />
+          </label>
+          <label class="isYTMusic cell">
+            <label for="isYTMusic">YouTube Music</label>
+            <input
+              type="checkbox"
+              bind:checked={$settings.isYTMusic}
+              id="isYTMusic"
+            />
+          </label>
+        </div>
+      </div>
+      <div class="tracklist">
+        {#key $settings.isAllArtists}
+          {#each content.tracklist as track}
+            {#if track.type_ == "track"}
               {@const title = formattedTrackTitle(content.artists, track)}
               <button class="track" on:click={() => onTrackClick(title)}>
                 {#if track.position.length > 0}
@@ -163,19 +111,13 @@
                   </div>
                 {/if}
               </button>
-            {/each}
-          {/key}
-        </div>
-        <div class="info">
-          {name}
-          {version}
-        </div>
-      {:else}
-        <p class="error"><b>dscgs error</b><br />{content.error}</p>
-      {/if}
+            {/if}
+          {/each}
+        {/key}
+      </div>
     </div>
   </div>
-{/if}
+{/await}
 
 <style>
   * {
@@ -184,11 +126,10 @@
     box-sizing: border-box;
   }
 
-  #app {
+  .wrapper {
     max-width: calc(1288px + 4em);
     width: 100%;
     margin: 0 auto;
-    margin-top: 1.5rem;
     padding: 0 2em;
     display: flex;
     justify-content: left;
@@ -198,20 +139,14 @@
     }
   }
 
-  select {
-    padding: 0;
-    background: none;
-    border: none;
-    border-radius: 0;
-    outline: none;
-    text-decoration-line: underline;
-  }
-
   .container {
-    max-width: 640px;
+    max-width: 600px;
     width: 100%;
-    padding: 12px;
-    border: 1px solid #bbb;
+    margin-bottom: 2rem;
+    border: 1px solid #ccc;
+    padding: 8px;
+    background-color: #efefef;
+    box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.15);
   }
 
   .header {
@@ -219,47 +154,50 @@
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 6px;
     margin-bottom: 6px;
   }
 
-  .info {
-    color: #444;
-    margin-top: 8px;
-    padding-left: 4px;
-    text-align: right;
+  hr {
+    border: 0;
+    border-top: 2px dashed #ddd;
   }
 
   .content-title {
-    color: #fff;
+    padding-left: 12px;
+    padding-right: 12px;
     font-weight: bold;
+    font-size: 13;
+    background-color: #fff;
+    border: 1px solid #bbb;
   }
 
   .settings {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 12px;
+    gap: 6px;
   }
 
-  .allArtists,
-  .platform {
-    background-color: #eee;
+  .settings > * {
     gap: 2px;
+    padding-left: 11px;
+    padding-right: 8px;
+    background-color: #fff;
+    border: 1px solid #bbb;
   }
 
   .tracklist {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
   }
 
   button {
-    font-size: 12px;
-    padding: 9px;
+    padding: 8px;
     text-align: left;
     cursor: pointer;
-    background-color: #eee;
+    background-color: #fff;
     border-radius: 4px;
     border: 1px solid #bbb;
     display: flex;
@@ -293,10 +231,7 @@
   }
 
   .cell {
-    height: 28px;
-    padding-left: 10px;
-    padding-right: 10px;
-    font-size: 12px;
+    height: 30px;
     border-radius: 4px;
     display: flex;
     align-items: center;

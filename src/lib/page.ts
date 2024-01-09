@@ -11,7 +11,7 @@ export type OtherPageInfo = {
 };
 export type PageInfo = MasterPageInfo | ReleasePageInfo | OtherPageInfo;
 
-export function getPageInfo(): PageInfo {
+export function makeCurrentPageInfo(): PageInfo {
   const url = new URL(document.URL);
   const match = /^\/(?<type>.+)\/(?<id>[0-9]+)-.+/.exec(url.pathname);
   if (!match || !match.groups) {

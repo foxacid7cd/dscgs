@@ -1,14 +1,37 @@
 import App from "./App.svelte";
+import { makeCurrentPageInfo } from "./lib/page";
+import { fetchTracklistContent } from "./lib/tracklist";
 
-new App({
-  target: (() => {
-    const div = document.createElement("div");
-    const app = document.querySelector("#app");
-    if (app) {
-      app.prepend(div);
-    } else {
-      console.error("could not find content element");
-    }
-    return div;
-  })(),
-});
+function waitForContentElement(
+  handler: (element: Element) => void,
+  counter: number = 0,
+) {
+  const element = document.querySelector("#app [class^=content_]");
+  if (element) {
+    handler(element);
+  } else if (counter < 100) {
+    setTimeout(() => {
+      waitForContentElement(handler, counter + 1);
+    }, 200);
+  } else {
+    console.error("waiting for element timed out");
+  }
+}
+
+const pageInfo = makeCurrentPageInfo();
+if (pageInfo.type !== "other") {
+  const tracklistContent = fetchTracklistContent(pageInfo);
+  waitForContentElement((contentElement) => {
+    new App({
+      target: (() => {
+        const div = document.createElement("div");
+        contentElement.prepend(div);
+        return div;
+      })(),
+      props: {
+        pageInfo,
+        tracklistContent,
+      },
+    });
+  });
+}
