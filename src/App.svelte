@@ -99,7 +99,7 @@
               <button class="track" on:click={() => onTrackClick(title)}>
                 {#if track.position.length > 0}
                   <div class="position">
-                    <b>{track.position}</b>
+                    {track.position}
                   </div>
                 {/if}
                 <div class="title">
@@ -111,6 +111,10 @@
                   </div>
                 {/if}
               </button>
+            {:else if track.type_ == "heading"}
+              <div class="heading">
+                {track.title}
+              </div>
             {/if}
           {/each}
         {/key}
@@ -160,14 +164,13 @@
 
   hr {
     border: 0;
-    border-top: 2px dashed #ddd;
+    border-top: 1px solid #bbb;
   }
 
   .content-title {
     padding-left: 12px;
     padding-right: 12px;
     font-weight: bold;
-    font-size: 13;
     background-color: #fff;
     border: 1px solid #bbb;
   }
@@ -193,7 +196,19 @@
     gap: 2px;
   }
 
-  button {
+  .tracklist > .heading {
+    padding-top: 8px;
+    padding-bottom: 2px;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tracklist > .track {
     padding: 8px;
     text-align: left;
     cursor: pointer;
@@ -205,29 +220,24 @@
     gap: 8px;
   }
 
-  button:hover {
+  .tracklist > .track:hover {
     background-color: #ddd;
   }
 
-  button:active {
+  .tracklist > .track:active {
     background-color: #ccc;
   }
 
   .track > .position {
-    color: #333;
+    font-weight: bold;
   }
 
   .track > .title {
     flex: 1;
-    color: #000;
   }
 
   .track > .duration {
-    color: #333;
-  }
-
-  .error {
-    color: darkred;
+    color: #000;
   }
 
   .cell {
